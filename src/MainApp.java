@@ -1,5 +1,7 @@
+import Database.Database;
 import Submenus.*;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -13,11 +15,30 @@ public class MainApp {
     public static final String ANSI_BLUE = "\u001B[34m";
 
     /**
-     * Displays the main menu of the application with all options
+     * This is the main function for launching the Hotel Reservation Application.
+     * Initializes a connection to the database and displays the main menu of the
+     * application with available options.
      */
     public static void main(String[] args) {
         System.out.println(ANSI_YELLOW + "Welcome to the Hotel Reservation Application! [v1.0.0]" + ANSI_RESET);
         Scanner scanner = new Scanner(System.in);
+
+        // Initializing database connection
+        try {
+            String your_userid = System.getenv("SOCSUSER");
+            String your_password = System.getenv("SOCSPASSWD");
+
+            if (your_userid == null || your_password == null) {
+                throw new IllegalStateException("Error: Unable to find SOCSUSER or SOCSPASSWD environment variables.");
+            }
+
+            Database.init(your_userid, your_password);
+        } catch (Exception e) {
+            System.err.println("There was an error connecting to the database");
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         // Main menu loop
         while (true) {
@@ -39,7 +60,7 @@ public class MainApp {
 
             // Checking if user input is an integer
             if (!scanner.hasNextInt()) {
-                System.out.println(ANSI_RED + "Error: Please enter an integer value" + ANSI_RESET);
+                System.err.println("Error: Please enter an integer value");
                 scanner.next();
                 continue;
             }
@@ -75,9 +96,18 @@ public class MainApp {
                 case 0:
                     System.out.println(ANSI_YELLOW + "Exiting Application ..." + ANSI_RESET);
                     System.out.println(ANSI_YELLOW + "Goodbye!" + ANSI_RESET);
-                    System.exit(0);
+
+                    // Closing connection to the database before exiting the application
+                    try {
+                        Database.close();
+                    } catch (SQLException e) {
+                        System.err.println("There was an error closing the connection to the database");
+                        e.printStackTrace();
+                    } finally {
+                        System.exit(0);
+                    }
                 default:
-                    System.out.println(ANSI_RED + "Error: Please enter a valid input value from the menu" + ANSI_RESET);
+                    System.err.println("Error: Please enter a valid input value from the menu");
                     break;
             }
         }
