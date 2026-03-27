@@ -1,4 +1,4 @@
-package Entities;
+package entities;
 
 public class Suite extends Room {
     private String viewType;

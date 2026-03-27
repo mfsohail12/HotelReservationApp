@@ -1,4 +1,4 @@
-package Entities;
+package entities;
 
 /**
  * Hotel entity
@@ -28,6 +28,6 @@ public class Hotel {
 
     @Override
     public String toString() {
-        return String.format("%d - %s - %s, %s - $d", id, name, address, city, rating);
+        return String.format("%d - %s - %s, %s - %d stars", id, name, address, city, rating);
     }
 }
