@@ -1,6 +1,8 @@
 package Submenus;
 
 import java.util.Scanner;
+
+import Colors.ConsoleColors;
 import Database.Database;
 import java.sql.*;
 
@@ -10,7 +12,7 @@ public class MakeReservationMenu implements Submenu {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println(ANSI_BLUE + "This is the make reservation submenu" + ANSI_RESET);
+            System.out.println(ConsoleColors.ANSI_BLUE + "This is the make reservation submenu" + ConsoleColors.ANSI_RESET);
             System.out.println("Enter 0 to return to the main menu");
 
             int input = scanner.nextInt();

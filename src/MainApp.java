@@ -1,3 +1,4 @@
+import Colors.ConsoleColors;
 import Database.Database;
 import Submenus.*;
 
@@ -8,19 +9,13 @@ import java.util.Scanner;
  * This is the main file where the application is run
  */
 public class MainApp {
-    // Ansi colour codes for coloring output in the console
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_YELLOW = "\u001B[33m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-
     /**
      * This is the main function for launching the Hotel Reservation Application.
      * Initializes a connection to the database and displays the main menu of the
      * application with available options.
      */
     public static void main(String[] args) {
-        System.out.println(ANSI_YELLOW + "Welcome to the Hotel Reservation Application! [v1.0.0]" + ANSI_RESET);
+        System.out.println(ConsoleColors.ANSI_YELLOW + "Welcome to the Hotel Reservation Application! [v1.0.0]" + ConsoleColors.ANSI_RESET);
         Scanner scanner = new Scanner(System.in);
 
         // Initializing database connection
@@ -43,7 +38,7 @@ public class MainApp {
         // Main menu loop
         while (true) {
             // Displaying input menu options
-            System.out.println(ANSI_BLUE + "\n-------------------------\n" +
+            System.out.println(ConsoleColors.ANSI_BLUE + "\n-------------------------\n" +
                     "Input Menu:\n" +
                     "1 - Make a reservation\n" +
                     "2 - Cancel a reservation\n" +
@@ -52,7 +47,7 @@ public class MainApp {
                     "5 - Upgrade reservation\n" +
                     "6 - Show all reservations\n" +
                     "0 - Exit Application\n" +
-                    "-------------------------\n" + ANSI_RESET
+                    "-------------------------\n" + ConsoleColors.ANSI_RESET
             );
 
             // Getting input value
@@ -94,8 +89,8 @@ public class MainApp {
                     showAllReservationsMenu.showMenu();
                     break;
                 case 0:
-                    System.out.println(ANSI_YELLOW + "Exiting Application ..." + ANSI_RESET);
-                    System.out.println(ANSI_YELLOW + "Goodbye!" + ANSI_RESET);
+                    System.out.println(ConsoleColors.ANSI_YELLOW + "Exiting Application ..." + ConsoleColors.ANSI_RESET);
+                    System.out.println(ConsoleColors.ANSI_YELLOW + "Goodbye!" + ConsoleColors.ANSI_RESET);
 
                     // Closing connection to the database before exiting the application
                     try {
