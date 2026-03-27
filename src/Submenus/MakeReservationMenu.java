@@ -1,10 +1,9 @@
 package Submenus;
 
-import java.util.Scanner;
-
+import java.util.*;
+import java.sql.*;
 import Colors.ConsoleColors;
 import Database.Database;
-import java.sql.*;
 
 public class MakeReservationMenu implements Submenu {
     @Override
@@ -12,8 +11,12 @@ public class MakeReservationMenu implements Submenu {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println(ConsoleColors.ANSI_BLUE + "This is the make reservation submenu" + ConsoleColors.ANSI_RESET);
-            System.out.println("Enter 0 to return to the main menu");
+            // Displaying menu info
+            System.out.println(ConsoleColors.ANSI_PURPLE + "[MAKE RESERVATION MENU]" + ConsoleColors.ANSI_RESET);
+            System.out.println("Follow the instructions below to make a reservation at a hotel.");
+
+            // Displaying hotel options
+
 
             int input = scanner.nextInt();
 

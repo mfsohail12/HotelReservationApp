@@ -37,9 +37,12 @@ public class MainApp {
 
         // Main menu loop
         while (true) {
+            // Displaying menu title
+            System.out.println(ConsoleColors.ANSI_PURPLE + "[MAIN MENU]" + ConsoleColors.ANSI_RESET);
+
             // Displaying input menu options
-            System.out.println(ConsoleColors.ANSI_BLUE + "\n-------------------------\n" +
-                    "Input Menu:\n" +
+            System.out.println(ConsoleColors.ANSI_BLUE +
+                    "\n━━Input Menu:━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
                     "1 - Make a reservation\n" +
                     "2 - Cancel a reservation\n" +
                     "3 - Leave a review\n" +
@@ -47,7 +50,8 @@ public class MainApp {
                     "5 - Upgrade reservation\n" +
                     "6 - Show all reservations\n" +
                     "0 - Exit Application\n" +
-                    "-------------------------\n" + ConsoleColors.ANSI_RESET
+                    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" +
+                    ConsoleColors.ANSI_RESET
             );
 
             // Getting input value
