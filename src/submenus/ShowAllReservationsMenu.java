@@ -1,4 +1,4 @@
-package Submenus;
+package submenus;
 
 public class ShowAllReservationsMenu implements Submenu {
     @Override
