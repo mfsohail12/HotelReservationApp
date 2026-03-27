@@ -1,4 +1,4 @@
-package Submenus;
+package submenus;
 
 public class UpgradeReservationMenu implements Submenu{
     @Override

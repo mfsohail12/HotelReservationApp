@@ -1,4 +1,4 @@
-package Submenus;
+package submenus;
 
 public interface Submenu {
     /**

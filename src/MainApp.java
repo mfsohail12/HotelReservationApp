@@ -1,6 +1,6 @@
-import Colors.ConsoleColors;
-import Database.Database;
-import Submenus.*;
+import colors.ConsoleColors;
+import database.Database;
+import submenus.*;
 
 import java.sql.SQLException;
 import java.util.Scanner;

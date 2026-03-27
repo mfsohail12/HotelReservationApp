@@ -1,9 +1,9 @@
-package Submenus;
+package submenus;
 
 import java.util.*;
 import java.sql.*;
-import Colors.ConsoleColors;
-import Database.Database;
+import colors.ConsoleColors;
+import database.Database;
 
 public class MakeReservationMenu implements Submenu {
     @Override
