@@ -7,5 +7,6 @@ public class LeaveReviewMenu implements Submenu {
         System.out.println("Leave Review Menu");
 
         //test
+        //something else
     }
 }
