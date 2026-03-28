@@ -16,6 +16,12 @@ public class MakeReservationMenu implements Submenu {
     public void showMenu() {
         Scanner scanner = new Scanner(System.in);
 
+        // User input values
+        int chosenHotelId;
+        String checkInDate;
+        String checkOutDate;
+        List<Integer> selectedRoomsNumbers = new ArrayList<>();
+
         while (true) {
             // Displaying menu info
             System.out.println();
@@ -41,8 +47,6 @@ public class MakeReservationMenu implements Submenu {
             }
 
             // Getting a hotel selection from user
-            int chosenHotelId;
-
             while (true) {
                 System.out.println("Please input chosen hotel id number:");
                 if (scanner.hasNextInt()) {
@@ -56,9 +60,6 @@ public class MakeReservationMenu implements Submenu {
             }
 
             // Getting check-in and check-out dates from user
-            String checkInDate;
-            String checkOutDate;
-
             scanner.nextLine(); // clear buffer
             while (true) {
                 System.out.println("Please input your desired check-in date in a YYYY-MM-DD format:");
@@ -97,11 +98,59 @@ public class MakeReservationMenu implements Submenu {
                 return;
             }
 
+            // Getting chosen rooms numbers from user:
+            while (true) {
+                System.out.println("Please input a desired room number. When finished selecting desired rooms, input 'done':");
 
+                if (scanner.hasNextInt()) {
+                    int roomNumber = scanner.nextInt();
+                    scanner.nextLine(); // clear input
 
+                    boolean validRoomNumber = false;
 
+                    // Checking if selected room number is one of the displayed ones
+                    List<Room> allAvailableRooms = new ArrayList<>(regularRooms); // merging regular rooms and suites lists into one
+                    allAvailableRooms.addAll(suites);
 
+                    for (Room room : allAvailableRooms) {
 
+                        if (room.getRoomNumber() == roomNumber) { // valid room number was given
+                            validRoomNumber = true;
+
+                            // Checking if the room hasn't already been selected by the user to avoid duplicates
+                            if (selectedRoomsNumbers.contains(roomNumber)) {
+                                System.err.println("You have already selected room " + roomNumber + ".");
+                                break;
+                            }
+
+                            selectedRoomsNumbers.add(room.getRoomNumber());
+                            break;
+                        }
+                    }
+
+                    // Display error for invalid selection
+                    if (!validRoomNumber) {
+                        System.err.println("Please enter a room number shown in the available rooms menu.");
+                    }
+                } else {
+                    // Checking if user is done choosing rooms
+                    String input = scanner.nextLine();
+
+                    if (input.equals("done")) {
+                        // Checking if user chose at least one room
+                        if (selectedRoomsNumbers.isEmpty()) {
+                            System.err.println("You must choose at least one room!");
+                            continue;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        System.out.println(input);
+                        System.err.println("Invalid room number. Please enter a room number.");
+                    }
+
+                }
+            }
 
 
             int num = scanner.nextInt();
