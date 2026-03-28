@@ -7,7 +7,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.sql.*;
 import colors.ConsoleColors;
-import database.dao.ReservationDao;
+import database.dao.HotelDao;
+import database.dao.RoomDao;
 import entities.*;
 
 public class MakeReservationMenu implements Submenu {
@@ -26,7 +27,7 @@ public class MakeReservationMenu implements Submenu {
             List<Hotel> hotels;
 
             try {
-                hotels = ReservationDao.getAllHotels();
+                hotels = HotelDao.getAllHotels();
 
                 System.out.println(ConsoleColors.ANSI_BLUE + "━━Available Hotels:" + "━".repeat(50) + ConsoleColors.ANSI_RESET);
                 for (Hotel hotel : hotels) {
@@ -74,8 +75,8 @@ public class MakeReservationMenu implements Submenu {
             List<Suite> suites;
 
             try {
-                regularRooms = ReservationDao.getRegularRooms(chosenHotelId, checkInDate, checkOutDate);
-                suites = ReservationDao.getSuites(chosenHotelId, checkInDate, checkOutDate);
+                regularRooms = RoomDao.getRegularRooms(chosenHotelId, checkInDate, checkOutDate);
+                suites = RoomDao.getSuites(chosenHotelId, checkInDate, checkOutDate);
 
                 // Regular rooms
                 System.out.println(ConsoleColors.ANSI_BLUE + "━━Available Regular Rooms:" + "━".repeat(100) + ConsoleColors.ANSI_RESET);
