@@ -179,4 +179,30 @@ public class RoomDao {
 
         return suites;
     }
+
+    /**
+     * Gets the price of a room given the hotel ID and room number
+     * @param hotelId the hotel ID
+     * @param roomNumber the room number
+     * @return the price of the room
+     * @throws SQLException if there is an error executing the SQL query
+     */
+    public static int getRoomPrice(int hotelId, int roomNumber) throws SQLException {
+        String query = "SELECT price FROM Rooms WHERE hotel_id = ? AND room_number = ?";
+
+        Connection connection = Database.getConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, hotelId);
+            pstmt.setInt(2, roomNumber);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("price");
+                } else {
+                    throw new SQLException("Room not found: hotel_id=" + hotelId + ", room_number=" + roomNumber);
+                }
+            }
+        }
+    }
 }

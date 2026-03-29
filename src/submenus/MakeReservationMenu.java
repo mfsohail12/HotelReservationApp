@@ -4,11 +4,14 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.sql.*;
 import colors.ConsoleColors;
 import database.dao.HotelDao;
 import database.dao.RoomDao;
+import database.dao.ReservationDao;
+import database.dao.UserDao;
 import entities.*;
 
 public class MakeReservationMenu implements Submenu {
@@ -99,6 +102,9 @@ public class MakeReservationMenu implements Submenu {
             }
 
             // Getting chosen rooms numbers from user:
+            List<Room> allAvailableRooms = new ArrayList<>(regularRooms); // merging regular rooms and suites lists into one
+            allAvailableRooms.addAll(suites);
+            
             while (true) {
                 System.out.println("Please input a desired room number. When finished selecting desired rooms, input 'done':");
 
@@ -109,8 +115,7 @@ public class MakeReservationMenu implements Submenu {
                     boolean validRoomNumber = false;
 
                     // Checking if selected room number is one of the displayed ones
-                    List<Room> allAvailableRooms = new ArrayList<>(regularRooms); // merging regular rooms and suites lists into one
-                    allAvailableRooms.addAll(suites);
+                    
 
                     for (Room room : allAvailableRooms) {
 
@@ -145,16 +150,238 @@ public class MakeReservationMenu implements Submenu {
                             break;
                         }
                     } else {
-                        System.out.println(input);
                         System.err.println("Invalid room number. Please enter a room number.");
                     }
 
                 }
             }
 
+            // Getting user information
+            scanner.nextLine(); // clear buffer
+            String userName;
+            String userEmail;
+            LocalDate dateOfBirth;
 
-            int num = scanner.nextInt();
-            if (num == 0) return;
+            while (true) {
+                System.out.println("Please enter your full name:");
+                userName = scanner.nextLine().trim();
+
+                if (userName.isEmpty()) {
+                    System.err.println("Name cannot be empty. Please try again.");
+                    continue;
+                }
+
+                System.out.println("Please enter your email:");
+                userEmail = scanner.nextLine().trim();
+
+                if (!isValidEmail(userEmail)) {
+                    System.err.println("Invalid email format. Please try again.");
+                    continue;
+                }
+
+                System.out.println("Please enter your date of birth in YYYY-MM-DD format:");
+                String dobString = scanner.nextLine().trim();
+
+                if (!validateDateFormat(dobString)) {
+                    System.err.println("Invalid date format. Please use YYYY-MM-DD format.");
+                    continue;
+                }
+
+                dateOfBirth = LocalDate.parse(dobString);
+
+                // Validate user is old enough (18 years old)
+                LocalDate today = LocalDate.now();
+                long age = ChronoUnit.YEARS.between(dateOfBirth, today);
+
+                if (age < 18) {
+                    System.err.println("You must be at least 18 years old to make a reservation.");
+                    continue;
+                }
+
+                break;
+            }
+
+            // Check if user exists in database
+            boolean userExists = false;
+            User user = null;
+
+            try {
+                userExists = UserDao.userExists(userEmail);
+
+                if (userExists) {
+                    user = UserDao.getUserByEmail(userEmail);
+                } else {
+                    // Create new user
+                    user = new User(userName, userEmail, dateOfBirth);
+                }
+            } catch (SQLException e) {
+                System.err.println("Message: " + e.getMessage());
+                System.err.println("There was an error checking user information. Returning to the main menu ... ");
+                return;
+            }
+
+            // Calculate total cost
+            int totalCost = 0;
+            List<Room> selectedRooms = new ArrayList<>();
+
+            // Calculate nights
+            LocalDate checkInLocalDate = LocalDate.parse(checkInDate);
+            LocalDate checkOutLocalDate = LocalDate.parse(checkOutDate);
+            long nights = ChronoUnit.DAYS.between(checkInLocalDate, checkOutLocalDate);
+
+            for (int roomNumber : selectedRoomsNumbers) {
+                // Find room info from allAvailableRooms list
+                Room selectedRoom = null;
+
+                for (Room room : allAvailableRooms) {
+                    if (room.getRoomNumber() == roomNumber) {
+                        selectedRoom = room;
+                        break;
+                    }
+                }
+
+                selectedRooms.add(selectedRoom);
+
+                // Add to total cost
+                totalCost += selectedRoom.getPrice() * nights;
+            }
+
+            // Display confirmation
+            System.out.println();
+            System.out.println(ConsoleColors.ANSI_PURPLE + "━━[RESERVATION CONFIRMATION]━" + "━".repeat(40) + ConsoleColors.ANSI_RESET);
+
+            System.out.println(ConsoleColors.ANSI_BLUE + "User Information:" + ConsoleColors.ANSI_RESET);
+            System.out.println("  Name: " + userName);
+            System.out.println("  Email: " + userEmail);
+            System.out.println("  Date of Birth: " + dateOfBirth);
+
+            Hotel chosenHotel = null;
+            try {
+                for (Hotel h : hotels) {
+                    if (h.getId() == chosenHotelId) {
+                        chosenHotel = h;
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error retrieving hotel information.");
+                return;
+            }
+
+            System.out.println();
+            System.out.println(ConsoleColors.ANSI_BLUE + "Reservation Details:" + ConsoleColors.ANSI_RESET);
+            System.out.println("  Hotel: " + chosenHotel.getName());
+            System.out.println("  Check-in: " + checkInDate);
+            System.out.println("  Check-out: " + checkOutDate);
+            System.out.println("  Number of nights: " + nights);
+
+            System.out.println();
+            System.out.println(ConsoleColors.ANSI_BLUE + "Selected Rooms:" + ConsoleColors.ANSI_RESET);
+            for (Room room : selectedRooms) {
+                System.out.println(room);
+            }
+
+            System.out.println();
+            System.out.println(ConsoleColors.ANSI_BLUE + "Total Cost: $" + totalCost + ConsoleColors.ANSI_RESET);
+
+            System.out.println();
+            System.out.println("Do you want to proceed with this reservation? (yes/no)");
+            String confirmation = scanner.nextLine().trim().toLowerCase();
+
+            if (!confirmation.equals("yes")) {
+                System.out.println("Reservation cancelled. Returning to the main menu ...");
+                return;
+            }
+
+            // Get payment amount
+            int paymentAmount;
+            while (true) {
+                System.out.println("Enter payment amount (0 to " + totalCost + "):");
+                if (scanner.hasNextInt()) {
+                    paymentAmount = scanner.nextInt();
+                    scanner.nextLine(); // clear buffer
+
+                    if (paymentAmount >= 0 && paymentAmount <= totalCost) {
+                        break;
+                    } else {
+                        System.err.println("Payment amount must be between 0 and " + totalCost + ".");
+                    }
+                } else {
+                    System.err.println("Invalid input. Please enter a number.");
+                    scanner.nextLine();
+                }
+            }
+
+            // Get payment method if payment amount > 0
+            String paymentMethod = null;
+            if (paymentAmount > 0) {
+                while (true) {
+                    System.out.println("Select payment method:");
+                    System.out.println("1. Credit");
+                    System.out.println("2. Debit");
+                    System.out.println("3. PayPal");
+                    String methodChoice = scanner.nextLine().trim();
+
+                    if (methodChoice.equals("1")) {
+                        paymentMethod = "Credit";
+                        break;
+                    } else if (methodChoice.equals("2")) {
+                        paymentMethod = "Debit";
+                        break;
+                    } else if (methodChoice.equals("3")) {
+                        paymentMethod = "PayPal";
+                        break;
+                    } else {
+                        System.err.println("Invalid choice. Please select 1, 2, or 3.");
+                    }
+                }
+            }
+
+            // Insert into database
+            try {
+                // Insert user if doesn't exist
+                if (!userExists) {
+                    UserDao.insertUser(user);
+                    System.out.println("New user created with email: " + userEmail);
+                }
+
+                // Insert reservation
+                int reservationId = ReservationDao.insertReservation(userEmail, checkInLocalDate, checkOutLocalDate);
+
+                // Insert room bookings
+                for (int roomNumber : selectedRoomsNumbers) {
+                    ReservationDao.insertRoomBooking(reservationId, chosenHotelId, roomNumber);
+                }
+
+                // Insert payment if payment amount > 0
+                if (paymentAmount > 0) {
+                    ReservationDao.insertPayment(reservationId, paymentAmount, paymentMethod, userEmail);
+                    System.out.println(ConsoleColors.ANSI_GREEN + "Payment of $" + paymentAmount + " recorded via " + paymentMethod + "." + ConsoleColors.ANSI_RESET);
+                }
+
+                System.out.println();
+                System.out.println(ConsoleColors.ANSI_GREEN + "━━[RESERVATION SUCCESSFUL]━" + "━".repeat(40) + ConsoleColors.ANSI_RESET);
+                System.out.println(ConsoleColors.ANSI_GREEN + "Your reservation has been created!" + ConsoleColors.ANSI_RESET);
+                System.out.println(ConsoleColors.ANSI_GREEN + "Reservation ID: " + reservationId + ConsoleColors.ANSI_RESET);
+                System.out.println(ConsoleColors.ANSI_GREEN + "Please save this ID for your records." + ConsoleColors.ANSI_RESET);
+                System.out.println();
+
+                // Ask if user wants to make another reservation
+                System.out.println("Would you like to make another reservation? (yes/no)");
+                String anotherReservation = scanner.nextLine().trim().toLowerCase();
+
+                if (!anotherReservation.equals("yes")) {
+                    System.out.println("Thank you for using our Hotel Reservation App!");
+                    return;
+                }
+
+                // Reset for next iteration
+                selectedRoomsNumbers.clear();
+
+            } catch (SQLException e) {
+                System.err.println("Message: " + e.getMessage());
+                System.err.println("There was an error creating the reservation. Please try again.");
+            }
         }
     }
 
@@ -208,5 +435,15 @@ public class MakeReservationMenu implements Submenu {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Checks if a given email string has a valid email format
+     * @param email the email string
+     * @return true if the email has a valid format
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.isEmpty()) return false;
+        return email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 }
