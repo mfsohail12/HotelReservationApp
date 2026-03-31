@@ -53,8 +53,8 @@ public class RoomDao {
               JOIN Reservations res ON rb.reservation_id = res.reservation_id
               WHERE rb.hotel_id = r.hotel_id
                 AND rb.room_number = r.room_number
-                AND res.check_in < CAST(? AS DATE)
-                AND res.check_out > CAST(? AS DATE)
+                AND res.check_in <= CAST(? AS DATE)
+                AND res.check_out >= CAST(? AS DATE)
           )
           GROUP BY
               reg.hotel_id,

@@ -19,13 +19,18 @@ public class MakeReservationMenu implements Submenu {
     public void showMenu() {
         Scanner scanner = new Scanner(System.in);
 
-        // User input values
-        int chosenHotelId;
-        String checkInDate;
-        String checkOutDate;
-        List<Integer> selectedRoomsNumbers = new ArrayList<>();
-
         while (true) {
+            // User input values
+            int chosenHotelId;
+            String checkInDate;
+            String checkOutDate;
+            List<Integer> selectedRoomsNumbers = new ArrayList<>();
+            String userName;
+            String userEmail;
+            LocalDate dateOfBirth;
+            int paymentAmount;
+            String paymentMethod = null;
+
             // Displaying menu info
             System.out.println();
             System.out.println(ConsoleColors.ANSI_PURPLE + "[MAKE RESERVATION MENU]" + ConsoleColors.ANSI_RESET);
@@ -156,13 +161,10 @@ public class MakeReservationMenu implements Submenu {
                 }
             }
 
-            // Getting user information
-            scanner.nextLine(); // clear buffer
-            String userName;
-            String userEmail;
-            LocalDate dateOfBirth;
+            // Getting user information (username, email, DOB)
 
             while (true) {
+                System.out.println();
                 System.out.println("Please enter your full name:");
                 userName = scanner.nextLine().trim();
 
@@ -294,7 +296,6 @@ public class MakeReservationMenu implements Submenu {
             }
 
             // Get payment amount
-            int paymentAmount;
             while (true) {
                 System.out.println("Enter payment amount (0 to " + totalCost + "):");
                 if (scanner.hasNextInt()) {
@@ -313,7 +314,6 @@ public class MakeReservationMenu implements Submenu {
             }
 
             // Get payment method if payment amount > 0
-            String paymentMethod = null;
             if (paymentAmount > 0) {
                 while (true) {
                     System.out.println("Select payment method:");
@@ -363,24 +363,26 @@ public class MakeReservationMenu implements Submenu {
                 System.out.println(ConsoleColors.ANSI_GREEN + "━━[RESERVATION SUCCESSFUL]━" + "━".repeat(40) + ConsoleColors.ANSI_RESET);
                 System.out.println(ConsoleColors.ANSI_GREEN + "Your reservation has been created!" + ConsoleColors.ANSI_RESET);
                 System.out.println(ConsoleColors.ANSI_GREEN + "Reservation ID: " + reservationId + ConsoleColors.ANSI_RESET);
-                System.out.println(ConsoleColors.ANSI_GREEN + "Please save this ID for your records." + ConsoleColors.ANSI_RESET);
+                System.out.println(ConsoleColors.ANSI_GREEN + "**PLEASE SAVE THIS ID FOR YOUR RECORDS!**" + ConsoleColors.ANSI_RESET);
                 System.out.println();
-
-                // Ask if user wants to make another reservation
-                System.out.println("Would you like to make another reservation? (yes/no)");
-                String anotherReservation = scanner.nextLine().trim().toLowerCase();
-
-                if (!anotherReservation.equals("yes")) {
-                    System.out.println("Thank you for using our Hotel Reservation App!");
-                    return;
-                }
-
-                // Reset for next iteration
-                selectedRoomsNumbers.clear();
-
             } catch (SQLException e) {
                 System.err.println("Message: " + e.getMessage());
                 System.err.println("There was an error creating the reservation. Please try again.");
+            }
+
+            // Ask if user wants to quit to main menu
+            System.out.println("Please enter 0 to return to the main menu:");
+            while (true) {
+                if (scanner.hasNextInt()) {
+                    int input = scanner.nextInt();
+                    scanner.nextLine(); // clear buffer
+
+                    if (input == 0) {
+                        return;
+                    }
+                } else {
+                    scanner.nextLine(); // consume invalid input
+                }
             }
         }
     }
@@ -427,9 +429,9 @@ public class MakeReservationMenu implements Submenu {
     private boolean validateDateFormat(String date) {
         if (date == null) return false;
 
-        DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        sdf.setLenient(false); // enforces valid month and day values
         try {
+            DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            sdf.setLenient(false); // enforces valid month and day values
             sdf.parse(date);
         } catch (ParseException e) {
             return false;
