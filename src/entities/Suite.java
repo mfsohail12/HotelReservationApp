@@ -4,7 +4,7 @@ public class Suite extends Room {
     private String viewType;
     private String premiumFeatures;
 
-    public Suite(int roomNum, int price, String bedType, String numBeds, int size, String amenities, String viewType, String premiumFeatures) {
+    public Suite(int roomNum, int price, String bedType, int numBeds, int size, String amenities, String viewType, String premiumFeatures) {
         super(roomNum, price, bedType, numBeds, size, amenities);
         this.viewType = viewType;
         this.premiumFeatures = premiumFeatures;

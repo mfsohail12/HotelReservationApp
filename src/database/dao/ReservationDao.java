@@ -2,13 +2,12 @@ package database.dao;
 
 import database.Database;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.*;
 import entities.Reservation;
 
-public final class ReservationDao {
-    private ReservationDao() {}
-
+public class ReservationDao {
     /**
      * Gets all reservations for a given user email with hotel and room details
      * @param email the user's email
@@ -146,5 +145,118 @@ public final class ReservationDao {
                 }
             }
         }
+    }
+
+    /**
+     * Inserts a new reservation into the database
+     * @param email the user's email
+     * @param checkInDate the check-in date
+     * @param checkOutDate the check-out date
+     * @return the generated reservation_id
+     * @throws SQLException if there is an error executing the SQL query
+     */
+    public static int insertReservation(String email, LocalDate checkInDate, LocalDate checkOutDate) throws SQLException {
+        // Generate the next reservation ID
+        int reservationId = getNextReservationId();
+
+        String query = "INSERT INTO Reservations (reservation_id, email, check_in, check_out, is_paid_completely) VALUES (?, ?, ?, ?, 0)";
+
+        Connection connection = Database.getConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, reservationId);
+            pstmt.setString(2, email);
+            pstmt.setDate(3, Date.valueOf(checkInDate));
+            pstmt.setDate(4, Date.valueOf(checkOutDate));
+
+            pstmt.executeUpdate();
+            return reservationId;
+        }
+    }
+
+    /**
+     * Inserts a room booking into the database for a given reservation
+     * @param reservationId the reservation ID
+     * @param hotelId the hotel ID
+     * @param roomNumber the room number
+     * @throws SQLException if there is an error executing the SQL query
+     */
+    public static void insertRoomBooking(int reservationId, int hotelId, int roomNumber) throws SQLException {
+        String query = "INSERT INTO RoomBookings (reservation_id, hotel_id, room_number) VALUES (?, ?, ?)";
+
+        Connection connection = Database.getConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, reservationId);
+            pstmt.setInt(2, hotelId);
+            pstmt.setInt(3, roomNumber);
+
+            pstmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Inserts a payment into the database
+     * @param reservationId the reservation ID
+     * @param amount the payment amount
+     * @param method the payment method (Credit, Debit, or PayPal)
+     * @param email the user's email
+     * @throws SQLException if there is an error executing the SQL query
+     */
+    public static void insertPayment(int reservationId, int amount, String method, String email) throws SQLException {
+        // Generate the next payment ID
+        int paymentId = getNextPaymentId();
+
+        String query = "INSERT INTO Payments (payment_id, reservation_id, amount, method, email) VALUES (?, ?, ?, ?, ?)";
+
+        Connection connection = Database.getConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, paymentId);
+            pstmt.setInt(2, reservationId);
+            pstmt.setInt(3, amount);
+            pstmt.setString(4, method);
+            pstmt.setString(5, email);
+
+            pstmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Generates the next reservation ID by finding the max existing ID and incrementing
+     * @return the next available reservation_id
+     * @throws SQLException if there is an error executing the SQL query
+     */
+    private static int getNextReservationId() throws SQLException {
+        String query = "SELECT MAX(reservation_id) FROM Reservations";
+        Connection connection = Database.getConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                int maxId = rs.getInt(1);
+                return maxId + 1;
+            }
+        }
+        return 1;
+    }
+
+    /**
+     * Generates the next payment ID by finding the max existing ID and incrementing
+     * @return the next available payment_id
+     * @throws SQLException if there is an error executing the SQL query
+     */
+    private static int getNextPaymentId() throws SQLException {
+        String query = "SELECT MAX(payment_id) FROM Payments";
+        Connection connection = Database.getConnection();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                int maxId = rs.getInt(1);
+                return maxId + 1;
+            }
+        }
+        return 1;
     }
 }

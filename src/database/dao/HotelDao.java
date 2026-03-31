@@ -2,11 +2,10 @@ package database.dao;
 
 import database.Database;
 import entities.Hotel;
+import entities.RegularRoom;
+import entities.Suite;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
