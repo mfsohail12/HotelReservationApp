@@ -18,12 +18,14 @@ public class ShowAllReservationsMenu implements Submenu {
             System.out.println(ConsoleColors.ANSI_PURPLE + "View all your current and past reservations." + ConsoleColors.ANSI_RESET);
             System.out.println();
 
-            // -- Get user email --
+            // Get user email
             System.out.println("Please enter your email (or 0 to return to main menu):");
             String email = scanner.next();
-            if (email.equals("0")) return;
+            if (email.equals("0")) {
+                return;
+            }
 
-            // -- Verify user exists --
+            // Verify user exists
             Connection connection = Database.getConnection();
             try {
                 PreparedStatement userCheck = connection.prepareStatement("SELECT email, name FROM Users WHERE email = ?");
@@ -43,7 +45,7 @@ public class ShowAllReservationsMenu implements Submenu {
 
                 System.out.println("Welcome, " + userName + "!");
 
-                // -- Get all reservations --
+                // Get all reservations
                 List<Reservation> reservations = ReservationDao.getReservationsByEmail(email);
 
                 if (reservations.isEmpty()) {
@@ -81,8 +83,7 @@ public class ShowAllReservationsMenu implements Submenu {
                 return;
 
             } catch (SQLException e) {
-                System.err.println("Message: " + e.getMessage());
-                System.err.println("There was a database error. Returning to main menu ...");
+                System.err.println("Error: " + e.getMessage());
                 return;
             }
         }

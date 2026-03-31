@@ -19,8 +19,9 @@ public class LeaveReviewMenu implements Submenu {
             // Get user email
             System.out.println("Please enter your email (or 0 to return to main menu):");
             String email = scanner.next();
-
-            if(email.equals("0")) return;
+            if(email.equals("0")) {
+                return;
+            }
 
             // Verify user exists
             Connection connection = Database.getConnection();
