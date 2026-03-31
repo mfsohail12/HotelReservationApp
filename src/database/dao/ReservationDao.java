@@ -11,27 +11,53 @@ public class ReservationDao {
      * @throws SQLException if there is an error executing the SQL procedure
      */
     public static void upgradeRoom(int reservationId, int oldRoomNumber, int hotelId) throws SQLException {
+        Connection conn = Database.getConnection();
+
+        // Validate that the room belongs to the reservation
+        String validateQuery = """
+            SELECT COUNT(*)
+            FROM RoomBookings
+            WHERE reservation_id = ?
+              AND room_number = ?
+              AND hotel_id = ?
+        """;
+
+        try (PreparedStatement validatePs = conn.prepareStatement(validateQuery)) {
+            validatePs.setInt(1, reservationId);
+            validatePs.setInt(2, oldRoomNumber);
+            validatePs.setInt(3, hotelId);
+
+            ResultSet validateRs = validatePs.executeQuery();
+            validateRs.next();
+
+            if (validateRs.getInt(1) == 0) {
+                System.out.println("Error: This room is not part of your reservation.");
+                return;
+            }
+        }
+
+        // Call stored procedure
         String sql = "{CALL UpgradeRoom(?, ?, ?)}";
 
-        Connection conn = Database.getConnection();
         try (CallableStatement cs = conn.prepareCall(sql)) {
             cs.setInt(1, reservationId);
             cs.setInt(2, oldRoomNumber);
             cs.setInt(3, hotelId);
 
-            // Call the procedure
             cs.execute();
+        }
 
-            String checkQuery = """
-                SELECT COUNT(*) 
-                FROM RoomBookings RB
-                JOIN Suites S
-                  ON RB.hotel_id = S.hotel_id 
-                 AND RB.room_number = S.room_number
-                WHERE RB.reservation_id = ?
-            """;
+        // Check if upgrade succeeded
+        String checkQuery = """
+            SELECT COUNT(*) 
+            FROM RoomBookings RB
+            JOIN Suites S
+              ON RB.hotel_id = S.hotel_id 
+             AND RB.room_number = S.room_number
+            WHERE RB.reservation_id = ?
+        """;
 
-            PreparedStatement ps = conn.prepareStatement(checkQuery);
+        try (PreparedStatement ps = conn.prepareStatement(checkQuery)) {
             ps.setInt(1, reservationId);
 
             ResultSet rs = ps.executeQuery();
