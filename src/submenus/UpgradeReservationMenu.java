@@ -15,6 +15,7 @@ public class UpgradeReservationMenu implements Submenu {
         System.out.println();
         System.out.println(ConsoleColors.ANSI_PURPLE + "[UPGRADE RESERVATION MENU]" + ConsoleColors.ANSI_RESET);
         System.out.println(ConsoleColors.ANSI_PURPLE + "Follow the instructions below to upgrade your reservation." + ConsoleColors.ANSI_RESET);
+        System.out.println(ConsoleColors.ANSI_PURPLE + "Please input 0 if you wish to return to main menu." + ConsoleColors.ANSI_RESET);
         System.out.println();
 
         try {
@@ -30,6 +31,8 @@ public class UpgradeReservationMenu implements Submenu {
 
                     if (reservationId > 0) {
                         break;
+                    } else if (reservationId == 0) {
+                        return;
                     } else {
                         System.out.println("Reservation ID must be a positive number.");
                     }
@@ -49,6 +52,8 @@ public class UpgradeReservationMenu implements Submenu {
 
                     if (oldRoomNumber > 0) {
                         break;
+                    } else if (oldRoomNumber == 0) {
+                        return;
                     } else {
                         System.out.println("Room number must be positive.");
                     }

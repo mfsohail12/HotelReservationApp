@@ -1,38 +1,62 @@
 package database.dao;
 
 import database.Database;
-
 import java.sql.*;
 import java.time.LocalDate;
 
 public class ReservationDao {
-
     /**
      * Calls the UpgradeRoom procedure given the reservation ID, the old room number and the hotel ID
      * @throws SQLException if there is an error executing the SQL procedure
      */
     public static void upgradeRoom(int reservationId, int oldRoomNumber, int hotelId) throws SQLException {
+        Connection conn = Database.getConnection();
+
+        // Validate that the room belongs to the reservation
+        String validateQuery = """
+            SELECT COUNT(*)
+            FROM RoomBookings
+            WHERE reservation_id = ?
+              AND room_number = ?
+              AND hotel_id = ?
+        """;
+
+        try (PreparedStatement validatePs = conn.prepareStatement(validateQuery)) {
+            validatePs.setInt(1, reservationId);
+            validatePs.setInt(2, oldRoomNumber);
+            validatePs.setInt(3, hotelId);
+
+            ResultSet validateRs = validatePs.executeQuery();
+            validateRs.next();
+
+            if (validateRs.getInt(1) == 0) {
+                System.out.println("Error: This room is not part of your reservation.");
+                return;
+            }
+        }
+
+        // Call stored procedure
         String sql = "{CALL UpgradeRoom(?, ?, ?)}";
 
-        Connection conn = Database.getConnection();
         try (CallableStatement cs = conn.prepareCall(sql)) {
             cs.setInt(1, reservationId);
             cs.setInt(2, oldRoomNumber);
             cs.setInt(3, hotelId);
 
-            // Call the procedure
             cs.execute();
+        }
 
-            String checkQuery = """
-                SELECT COUNT(*) 
-                FROM RoomBookings RB
-                JOIN Suites S
-                  ON RB.hotel_id = S.hotel_id 
-                 AND RB.room_number = S.room_number
-                WHERE RB.reservation_id = ?
-            """;
+        // Check if upgrade succeeded
+        String checkQuery = """
+            SELECT COUNT(*) 
+            FROM RoomBookings RB
+            JOIN Suites S
+              ON RB.hotel_id = S.hotel_id 
+             AND RB.room_number = S.room_number
+            WHERE RB.reservation_id = ?
+        """;
 
-            PreparedStatement ps = conn.prepareStatement(checkQuery);
+        try (PreparedStatement ps = conn.prepareStatement(checkQuery)) {
             ps.setInt(1, reservationId);
 
             ResultSet rs = ps.executeQuery();
@@ -85,7 +109,7 @@ public class ReservationDao {
     public static int insertReservation(String email, LocalDate checkInDate, LocalDate checkOutDate) throws SQLException {
         // Generate the next reservation ID
         int reservationId = getNextReservationId();
-        
+
         String query = "INSERT INTO Reservations (reservation_id, email, check_in, check_out, is_paid_completely) VALUES (?, ?, ?, ?, 0)";
 
         Connection connection = Database.getConnection();
@@ -133,7 +157,7 @@ public class ReservationDao {
     public static void insertPayment(int reservationId, int amount, String method, String email) throws SQLException {
         // Generate the next payment ID
         int paymentId = getNextPaymentId();
-        
+
         String query = "INSERT INTO Payments (payment_id, reservation_id, amount, method, email) VALUES (?, ?, ?, ?, ?)";
 
         Connection connection = Database.getConnection();
