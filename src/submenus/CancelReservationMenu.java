@@ -18,12 +18,12 @@ public class CancelReservationMenu implements Submenu {
             System.out.println(ConsoleColors.ANSI_PURPLE + "Follow the instructions below to cancel a reservation." + ConsoleColors.ANSI_RESET);
             System.out.println();
 
-            // -- Get user email --
+            // Get user email
             System.out.println("Please enter your email (or 0 to return to main menu):");
             String email = scanner.next();
             if (email.equals("0")) return;
 
-            // -- Verify user exists --
+            // Verify user exists
             Connection connection = Database.getConnection();
             try {
                 PreparedStatement userCheck = connection.prepareStatement("SELECT email, name FROM Users WHERE email = ?");
@@ -43,7 +43,7 @@ public class CancelReservationMenu implements Submenu {
 
                 System.out.println("Welcome, " + userName + "!");
 
-                // -- Get all reservations --
+                // Get all reservations
                 List<Reservation> reservations = ReservationDao.getReservationsByEmail(email);
 
                 if (reservations.isEmpty()) {
@@ -82,7 +82,7 @@ public class CancelReservationMenu implements Submenu {
 
                 System.out.println(ConsoleColors.ANSI_BLUE + "━".repeat(69) + ConsoleColors.ANSI_RESET);
 
-                // -- Get reservation selection --
+                // Get reservation selection
                 int chosenResId;
                 while (true) {
                     System.out.println("Please input the reservation id you want to cancel:");
@@ -97,45 +97,51 @@ public class CancelReservationMenu implements Submenu {
                     else System.err.println("Invalid reservation id. Please choose from the list above.");
                 }
 
-                // -- Confirm cancellation --
+                // Confirm cancellation
                 System.out.println("Are you sure you want to cancel Reservation #" + chosenResId + "? (yes/no):");
                 String confirmation = scanner.next();
 
                 if (confirmation.equalsIgnoreCase("no")) {
-                    System.out.println("Cancellation aborted. Returning to main menu ...");
+                    System.out.println("Cancellation aborted. Returning to main menu...");
+                    return;
+
+                } else if (confirmation.equalsIgnoreCase("yes")) {
+
+                    // Delete related records then the reservation
+                    PreparedStatement deletePayments = connection.prepareStatement(
+                            "DELETE FROM Payments WHERE reservation_id = ?");
+                    deletePayments.setInt(1, chosenResId);
+                    deletePayments.executeUpdate();
+                    deletePayments.close();
+
+                    PreparedStatement deleteBookings = connection.prepareStatement(
+                            "DELETE FROM RoomBookings WHERE reservation_id = ?");
+                    deleteBookings.setInt(1, chosenResId);
+                    deleteBookings.executeUpdate();
+                    deleteBookings.close();
+
+                    PreparedStatement deleteRes = connection.prepareStatement(
+                            "DELETE FROM Reservations WHERE reservation_id = ?");
+                    deleteRes.setInt(1, chosenResId);
+                    int rowsDeleted = deleteRes.executeUpdate();
+                    deleteRes.close();
+
+                    if (rowsDeleted > 0) {
+                        System.out.println(ConsoleColors.ANSI_YELLOW + "Reservation #" + chosenResId + " has been successfully cancelled." + ConsoleColors.ANSI_RESET);
+                    } else {
+                        System.err.println("Something went wrong. The reservation was not cancelled.");
+                    }
+
+                    return;
+
+                } else {
+                    // Invalid input
+                    System.out.println("Invalid input. Cancellation aborted.");
                     return;
                 }
 
-                // -- Delete related records then the reservation --
-                PreparedStatement deletePayments = connection.prepareStatement(
-                        "DELETE FROM Payments WHERE reservation_id = ?");
-                deletePayments.setInt(1, chosenResId);
-                deletePayments.executeUpdate();
-                deletePayments.close();
-
-                PreparedStatement deleteBookings = connection.prepareStatement(
-                        "DELETE FROM RoomBookings WHERE reservation_id = ?");
-                deleteBookings.setInt(1, chosenResId);
-                deleteBookings.executeUpdate();
-                deleteBookings.close();
-
-                PreparedStatement deleteRes = connection.prepareStatement(
-                        "DELETE FROM Reservations WHERE reservation_id = ?");
-                deleteRes.setInt(1, chosenResId);
-                int rowsDeleted = deleteRes.executeUpdate();
-                deleteRes.close();
-
-                if (rowsDeleted > 0) {
-                    System.out.println(ConsoleColors.ANSI_YELLOW + "Reservation #" + chosenResId + " has been successfully cancelled." + ConsoleColors.ANSI_RESET);
-                } else {
-                    System.err.println("Something went wrong. The reservation was not cancelled.");
-                }
-
-                return;
-
             } catch (SQLException e) {
-                System.err.println("Message: " + e.getMessage());
-                System.err.println("There was a database error. Returning to main menu ...");
+                System.err.println("Error: " + e.getMessage());
                 return;
             }
         }
