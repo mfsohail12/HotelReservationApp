@@ -1,4 +1,5 @@
 package submenus;
+
 import colors.ConsoleColors;
 import database.dao.*;
 import entities.Attraction;
@@ -24,23 +25,23 @@ public class ExploreMenu implements Submenu {
 
             // Validate reservation ID
             while (true) {
-                System.out.print("Enter Reservation ID (or 0 to return to main menu): ");
+                System.out.print("Enter Reservation ID: ");
 
                 if (scanner.hasNextInt()) {
                     reservationId = scanner.nextInt();
-                    if (reservationId == 0) {return;}
+
                     if (reservationId > 0) {
                         break;
                     } else {
-                        System.out.println("Reservation ID must be a positive number.");
+                        System.out.println("Reservation ID must be a positive number (>0).");
                     }
-
                 } else {
                     System.out.println("Invalid input. Please enter a number.");
                     scanner.next(); // clear invalid input
                 }
             }
-     // Get hotel id from reservation id
+
+            // Get hotel id from reservation id
             int hotelId = ReservationDao.getHotelIdFromResId(reservationId);
 
             // Call procedures
@@ -49,28 +50,42 @@ public class ExploreMenu implements Submenu {
 
             // Iteratively print records
             if (attractions.isEmpty()) {
-                System.out.println("\nNo nearby attractions found.");
+                System.out.println(ConsoleColors.ANSI_BLUE + "\nNo nearby attractions found." + ConsoleColors.ANSI_RESET);
+            } else {
+                System.out.println(ConsoleColors.ANSI_BLUE + "-----------------------------");
+                System.out.println("Nearby Attractions:");
+                for (Attraction a : attractions) {
+                    System.out.println(a);
+                }
+                System.out.println("-----------------------------" + ConsoleColors.ANSI_RESET);
             }
-            else {
-            System.out.println("-----------------------------");
-            System.out.println("Nearby Attractions:");
-            for (Attraction a : attractions) {
-                System.out.println(a);
-            }
-            System.out.println("-----------------------------");
-        }
             if (transportations.isEmpty()) {
-                System.out.println("No nearby transportation found.");
+                System.out.println(ConsoleColors.ANSI_BLUE + "No nearby transportation found." + ConsoleColors.ANSI_RESET);
+            } else {
+                System.out.println(ConsoleColors.ANSI_BLUE + "Nearby Transportation:");
+                for (Transportation t : transportations) {
+                    System.out.println(t);
+                }
+                System.out.println("-----------------------------\n" + ConsoleColors.ANSI_RESET);
             }
-            else {
-            System.out.println("Nearby Transportation:");
-            for (Transportation t : transportations) {
-                System.out.println(t);
+
+            // Ask if user wants to quit to main menu
+            System.out.println("Please enter 0 to return to the main menu:");
+            while (true) {
+                if (scanner.hasNextInt()) {
+                    int input = scanner.nextInt();
+                    scanner.nextLine(); // clear buffer
+
+                    if (input == 0) {
+                        return;
+                    }
+                } else {
+                    scanner.nextLine(); // consume invalid input
+                }
             }
-            System.out.println("-----------------------------\n");
-        }
         } catch (SQLException e) {
             System.out.println("Error retrieving exploration data: " + e.getMessage());
+            System.out.println("Returning to main menu...");
         }
     }
 }
