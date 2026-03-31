@@ -16,13 +16,13 @@ public class LeaveReviewMenu implements Submenu {
             System.out.println(ConsoleColors.ANSI_PURPLE + "Follow the instructions below to leave a review for a hotel you have stayed at." + ConsoleColors.ANSI_RESET);
             System.out.println();
 
-            // -- Get user email --
+            // Get user email
             System.out.println("Please enter your email (or 0 to return to main menu):");
             String email = scanner.next();
 
             if(email.equals("0")) return;
 
-            // -- Verify user exists --
+            // Verify user exists
             Connection connection = Database.getConnection();
             try {
                 PreparedStatement userCheck = connection.prepareStatement("SELECT email, name FROM Users WHERE email = ?");
@@ -42,7 +42,7 @@ public class LeaveReviewMenu implements Submenu {
 
                 System.out.println("Welcome, " + userName + "!");
 
-                // -- Sub-menu: show hotels the user has stayed at (via their reservations) --
+                // Sub-menu, show hotels the user has stayed at (via their reservations)
                 String hotelQuery = """
                     SELECT DISTINCT h.hotel_id, h.name, h.city
                     FROM Reservations res
@@ -82,7 +82,7 @@ public class LeaveReviewMenu implements Submenu {
                 }
                 System.out.println(ConsoleColors.ANSI_BLUE + "━".repeat(69) + ConsoleColors.ANSI_RESET);
 
-                // -- Get hotel selection --
+                // Get hotel selection
                 int chosenHotelId;
                 while (true) {
                     System.out.println("Please input the hotel id you want to review:");
@@ -102,7 +102,7 @@ public class LeaveReviewMenu implements Submenu {
                     else System.err.println("Invalid hotel id. Please choose from the list above.");
                 }
 
-                // -- Get rating (1-5) --
+                // Get rating (1-5)
                 int rating;
                 while (true) {
                     System.out.println("Please enter a rating (1-5):");
@@ -118,15 +118,15 @@ public class LeaveReviewMenu implements Submenu {
 
                 scanner.nextLine();
 
-                // -- Get review title --
+                // Get review title
                 System.out.println("Please enter a title for your review:");
                 String title = scanner.nextLine();
 
-                // -- Get review comment --
+                // Get review comment
                 System.out.println("Please enter your review comment:");
                 String comment = scanner.nextLine();
 
-                // -- Get next review_id --
+                // Get next review_id
                 Statement maxStmt = connection.createStatement();
                 ResultSet maxRs = maxStmt.executeQuery("SELECT MAX(review_id) AS max_id FROM Reviews");
                 int nextReviewId = 1;
@@ -136,7 +136,7 @@ public class LeaveReviewMenu implements Submenu {
                 maxRs.close();
                 maxStmt.close();
 
-                // -- Insert the review --
+                // Insert the review
                 String insertQuery = """
                     INSERT INTO Reviews (review_id, rating, date, title, comment, email, hotel_id)
                     VALUES (?, ?, CURRENT DATE, ?, ?, ?, ?)
@@ -162,7 +162,7 @@ public class LeaveReviewMenu implements Submenu {
                 return;
 
             } catch (SQLException e) {
-                System.err.println("Message: " + e.getMessage());
+                System.err.println("Error: " + e.getMessage());
                 return;
             }
         }
