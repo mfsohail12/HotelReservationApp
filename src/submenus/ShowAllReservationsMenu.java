@@ -5,7 +5,7 @@ import java.sql.*;
 import colors.ConsoleColors;
 import database.Database;
 import database.dao.ReservationDao;
-import database.dao.ReservationDao.ReservationInfo;
+import entities.Reservation;
 
 public class ShowAllReservationsMenu implements Submenu {
     @Override
@@ -44,7 +44,7 @@ public class ShowAllReservationsMenu implements Submenu {
                 System.out.println("Welcome, " + userName + "!");
 
                 // -- Get all reservations --
-                List<ReservationInfo> reservations = ReservationDao.getReservationsByEmail(email);
+                List<Reservation> reservations = ReservationDao.getReservationsByEmail(email);
 
                 if (reservations.isEmpty()) {
                     System.err.println("You have no reservations on record.");
@@ -55,7 +55,7 @@ public class ShowAllReservationsMenu implements Submenu {
                 System.out.println(ConsoleColors.ANSI_BLUE + "━━Your Reservations:" + "━".repeat(50) + ConsoleColors.ANSI_RESET);
 
                 int currentResId = -1;
-                for (ReservationInfo res : reservations) {
+                for (Reservation res : reservations) {
                     if (res.reservationId != currentResId) {
                         if (currentResId != -1) {
                             System.out.println(ConsoleColors.ANSI_BLUE + "─".repeat(69) + ConsoleColors.ANSI_RESET);

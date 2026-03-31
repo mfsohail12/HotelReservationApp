@@ -5,8 +5,6 @@ import java.sql.*;
 import colors.ConsoleColors;
 import database.Database;
 
-
-
 public class LeaveReviewMenu implements Submenu {
     @Override
     public void showMenu() {
